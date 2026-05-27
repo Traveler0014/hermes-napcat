@@ -7,7 +7,7 @@ name = "hermes-napcat"
 version = "0.3.0"
 description = "NapCat (QQ / OneBot 11) platform adapter for Hermes Agent"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 requires-python = ">=3.11"
 authors = [
     { name = "TravonD", email = "zhouyanbai@qq.com" },
@@ -16,7 +16,6 @@ keywords = ["hermes", "napcat", "qq", "onebot", "chatbot"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Topic :: Communications :: Chat",
 ]
 dependencies = [
