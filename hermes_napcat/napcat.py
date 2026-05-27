@@ -577,7 +577,7 @@ def _napcat_platform_block(
             "http_api": f"http://127.0.0.1:{http_port}",
             "access_token": access_token,
             "self_id": qq or "YOUR_QQ_NUMBER",
-            "ws_port": ws_port,
+            "ws_url": f"ws://0.0.0.0:{ws_port}",
             "dm_policy": "allowlist",
             "allow_from": [],
             "admins": admins or [],
@@ -714,7 +714,7 @@ def _print_instructions(
         print(f'         http_api: "http://127.0.0.1:{http_port}"')
         print(f'         access_token: "{access_token}"')
         print(f'         self_id: "{qq or "YOUR_QQ_NUMBER"}"')
-        print(f"         ws_port: {ws_port}")
+        print(f'         ws_url: "ws://0.0.0.0:{ws_port}"')
         print('         dm_policy: "allowlist"')
         print("         allow_from: []")
         print("         admins: []             # QQ numbers that can use management commands")

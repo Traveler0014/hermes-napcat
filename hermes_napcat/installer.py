@@ -174,62 +174,32 @@ def _unpatch_config(hermes_root: Path) -> None:
 # ── Step 3: patch gateway/run.py ─────────────────────────────────────────────
 
 _RUN_MARKER = "# napcat-installed"
+_RUN_PATCH_CODE = """
+# napcat-installed
+# Monkey-patch _create_adapter to add NapCat support.
+# This is appended at the end of run.py so it takes effect after the
+# original function is defined — no fragile regex insertion needed.
+_original_create_adapter = _create_adapter
+def _create_adapter(platform, config):
+    if platform == Platform.NAPCAT:
+        from gateway.platforms.napcat import NapCatAdapter
+        return NapCatAdapter(config)
+    return _original_create_adapter(platform, config)
+"""
 
 
 def _patch_run(hermes_root: Path) -> None:
     path = hermes_root / "gateway" / "run.py"
-    _backup(path)
     src = _read(path)
 
     if _RUN_MARKER in src:
         print("  [=] gateway/run.py already patched")
         return
 
-    # Locate _create_adapter function definition
-    func_match = re.search(r'^([ \t]*)def _create_adapter\(', src, re.MULTILINE)
-    if not func_match:
-        raise RuntimeError("Could not find _create_adapter in gateway/run.py")
-    func_pos = func_match.start()
-
-    # Detect body indentation from the first elif/return inside the function
-    body_match = re.search(r'\n([ \t]+)(elif|return)\s', src[func_pos:])
-    body_indent = body_match.group(1) if body_match else "        "
-    inner_indent = body_indent + "    "
-
-    napcat_block = (
-        f"\n{body_indent}elif platform == Platform.NAPCAT:  {_RUN_MARKER}\n"
-        f"{inner_indent}from gateway.platforms.napcat import NapCatAdapter, check_napcat_requirements\n"
-        f"{inner_indent}if not check_napcat_requirements():\n"
-        f"{inner_indent}    logger.warning('NapCat: aiohttp not installed')\n"
-        f"{inner_indent}    return None\n"
-        f"{inner_indent}return NapCatAdapter(config)\n"
-    )
-
-    # Insert before the final "return None" inside _create_adapter
-    return_match = re.search(
-        r'(?m)^' + re.escape(body_indent) + r'return None\b',
-        src[func_pos:],
-    )
-    if return_match:
-        insert_pos = func_pos + return_match.start()
-        src = src[:insert_pos] + napcat_block + src[insert_pos:]
-    else:
-        # Fallback: insert after the last elif at body indent level
-        last_elif = list(re.finditer(
-            r'(?m)^' + re.escape(body_indent) + r'elif platform == Platform\.\w+:',
-            src[func_pos:],
-        ))
-        if not last_elif:
-            raise RuntimeError("Could not find adapter dispatch in gateway/run.py")
-        pos = func_pos + last_elif[-1].start()
-        next_block = re.search(
-            r'\n' + re.escape(body_indent) + r'(elif|else|return)', src[pos:]
-        )
-        insert_pos = pos + next_block.start(0) + 1 if next_block else len(src)
-        src = src[:insert_pos] + napcat_block + src[insert_pos:]
-
+    _backup(path)
+    src = src.rstrip("\n") + "\n" + _RUN_PATCH_CODE + "\n"
     _write(path, src)
-    print("  [+] Patched gateway/run.py (_create_adapter)")
+    print("  [+] Patched gateway/run.py (NapCat adapter wrapper appended)")
 
 
 def _unpatch_run(hermes_root: Path) -> None:
@@ -448,7 +418,7 @@ def install(hermes_dir: str | None = None) -> None:
     print('        http_api: "http://127.0.0.1:18801"')
     print('        access_token: ""')
     print('        self_id: "YOUR_QQ_NUMBER"')
-    print("        ws_port: 18800")
+    print('        ws_url: "ws://0.0.0.0:18800"')
     print('        dm_policy: "allowlist"')
     print("        allow_from: []")
     print("        admins: []")

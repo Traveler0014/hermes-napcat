@@ -101,7 +101,7 @@ platforms:
       http_api: "http://127.0.0.1:18801"   # NapCat HTTP API 地址
       access_token: ""                      # Bearer Token（NapCat 中设置后填写）
       self_id: "123456789"                  # 机器人 QQ 号
-      ws_port: 18800                        # 反向 WS 监听端口
+      ws_url: "ws://0.0.0.0:18800"           # 反向 WS 监听地址
       dm_policy: open                       # open（开放）| allowlist（白名单）| disabled（关闭）
       allow_from: []                        # 允许私聊的 QQ 号（白名单模式）
       admins:                               # 可使用管理指令的 QQ 号

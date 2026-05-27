@@ -101,7 +101,7 @@ platforms:
       http_api: "http://127.0.0.1:18801"   # NapCat HTTP API
       access_token: ""                      # Bearer token (if set in NapCat)
       self_id: "123456789"                  # Bot QQ number
-      ws_port: 18800                        # Reverse WS listen port
+      ws_url: "ws://0.0.0.0:18800"           # Reverse WS listen URL
       dm_policy: open                       # open | allowlist | disabled
       allow_from: []                        # QQ numbers allowed for DMs
       admins:                               # Can use management commands

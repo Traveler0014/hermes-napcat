@@ -12,8 +12,7 @@ Configuration in ~/.hermes/config.yaml:
           http_api: "http://127.0.0.1:18801"
           access_token: ""
           self_id: "123456789"
-          ws_port: 18800
-          ws_host: "0.0.0.0"
+          ws_url: "ws://0.0.0.0:18800"
           dm_policy: "allowlist"     # allowlist | open | disabled
           allow_from: []             # QQ numbers allowed for DMs
           group_policy: "open"       # open | allowlist | disabled
@@ -326,6 +325,19 @@ class NapCatAdapter(BasePlatformAdapter):
         self._self_id: str = "" if raw_self_id in ("YOUR_QQ_NUMBER", "YOURQQ_NUMBER") else raw_self_id
         self._ws_port: int = int(extra.get("ws_port", 18800))
         self._ws_host: str = extra.get("ws_host", "0.0.0.0")
+        
+        # ws_url overrides ws_host/ws_port if provided (preferred: full URL)
+        if ws_url := extra.get("ws_url", "").strip():
+            try:
+                from urllib.parse import urlparse
+                parsed = urlparse(ws_url)
+                if parsed.hostname:
+                    self._ws_host = parsed.hostname
+                if parsed.port:
+                    self._ws_port = parsed.port
+            except Exception:
+                pass
+
         self._dm_policy: str = extra.get("dm_policy", "allowlist")
         self._allow_from: list[str] = [str(x) for x in extra.get("allow_from", [])]
         self._group_policy: str = extra.get("group_policy", "open")
@@ -745,14 +757,18 @@ def _env_enablement() -> dict | None:
     if not http_api:
         return None
     seed: dict[str, Any] = {"http_api": http_api}
+    ws_url = os.getenv("NAPCAT_WS_URL", "").strip()
+    if ws_url:
+        seed["ws_url"] = ws_url
+    # Legacy env vars — ws_url takes precedence if both set
     ws_port = os.getenv("NAPCAT_WS_PORT", "").strip()
-    if ws_port:
+    if ws_port and "ws_url" not in seed:
         try:
             seed["ws_port"] = int(ws_port)
         except ValueError:
             pass
     ws_host = os.getenv("NAPCAT_WS_HOST", "").strip()
-    if ws_host:
+    if ws_host and "ws_url" not in seed:
         seed["ws_host"] = ws_host
     token = os.getenv("NAPCAT_ACCESS_TOKEN", "").strip()
     if token:
