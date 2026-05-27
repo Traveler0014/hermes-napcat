@@ -7,7 +7,6 @@ import socket
 import subprocess
 import sys
 
-
 # ── Interactive helpers ────────────────────────────────────────────────────────
 
 def _ask(prompt: str, default: str = "") -> str:
@@ -78,7 +77,7 @@ def _ask_port(prompt: str, default: int) -> int:
     while True:
         port = _ask_int(prompt, default)
         if not (1 <= port <= 65535):
-            print(f"    Port must be between 1 and 65535.")
+            print("    Port must be between 1 and 65535.")
             continue
         if _port_in_use(port):
             owner = _port_owner(port)
@@ -197,7 +196,7 @@ def _interactive_setup() -> dict:
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main(argv: list[str] | None = None) -> None:
-    from .installer import install, uninstall, status
+    from .installer import install, status, uninstall
 
     parser = argparse.ArgumentParser(
         prog="hermes-napcat",
@@ -294,7 +293,7 @@ def main(argv: list[str] | None = None) -> None:
             install(args.hermes_dir)
 
         elif args.command == "uninstall":
-            from .napcat import uninstall_napcat, clean_hermes_config
+            from .napcat import clean_hermes_config, uninstall_napcat
 
             do_hermes = not args.napcat_only
             do_napcat = not args.hermes_only
@@ -368,7 +367,7 @@ def main(argv: list[str] | None = None) -> None:
                 setup_hermes_only(**kwargs)
 
         elif args.command == "napcat":
-            from .napcat import start_napcat, stop_napcat, napcat_status
+            from .napcat import napcat_status, start_napcat, stop_napcat
             if args.napcat_command == "start":
                 start_napcat(args.qq)
             elif args.napcat_command == "stop":

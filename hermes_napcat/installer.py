@@ -15,10 +15,8 @@ Uninstall restores the backups and removes ``gateway/platforms/napcat.py``.
 from __future__ import annotations
 
 import importlib.util
-import os
 import re
 import shutil
-import sys
 from pathlib import Path
 
 # ── Locate Hermes ─────────────────────────────────────────────────────────────
@@ -114,7 +112,7 @@ def _install_adapter(hermes_root: Path) -> None:
         shutil.copy2(pkg / "qq_tool.py", tools_dir / "qq_tool.py")
         print(f"  [+] Copied QQ tools       → {tools_dir / 'qq_tool.py'}")
     else:
-        print(f"  [!] tools/ directory not found — qq_tool.py not installed")
+        print("  [!] tools/ directory not found — qq_tool.py not installed")
 
 
 def _uninstall_adapter(hermes_root: Path) -> None:

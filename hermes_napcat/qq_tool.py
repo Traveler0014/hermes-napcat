@@ -11,7 +11,6 @@ import logging
 from typing import Any
 
 import aiohttp
-
 from tools.registry import registry, tool_error, tool_result
 
 logger = logging.getLogger(__name__)

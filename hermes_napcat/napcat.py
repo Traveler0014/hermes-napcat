@@ -266,7 +266,6 @@ def start_napcat(qq: str | None = None) -> None:
     deadline = time.time() + 90
     qr_shown = False
     logged_in = False
-    last_pos = 0
 
     while time.time() < deadline:
         time.sleep(0.5)
@@ -289,7 +288,6 @@ def start_napcat(qq: str | None = None) -> None:
                     break
             qr_shown = True
             print("\n  ↑ 用 QQ 扫码登录，等待成功...", flush=True)
-            last_pos = len(content)
 
         if "适配器初始化完成" in content:
             logged_in = True
@@ -341,7 +339,8 @@ def uninstall_napcat(remove_data: bool = True) -> None:
     """Stop NapCat and remove its installation."""
     if napcat_running():
         stop_napcat()
-        import time; time.sleep(1)
+        import time
+        time.sleep(1)
 
     home = napcat_home()
     if home.exists():
@@ -419,7 +418,7 @@ WantedBy=multi-user.target
 
     subprocess.run(["systemctl", "daemon-reload"], check=True)
     subprocess.run(["systemctl", "enable", _NAPCAT_SERVICE_NAME, _GATEWAY_SERVICE_NAME], check=True)
-    print(f"\n✓ Systemd services installed and enabled.")
+    print("\n✓ Systemd services installed and enabled.")
     print(f"  Start:   systemctl start {_NAPCAT_SERVICE_NAME} {_GATEWAY_SERVICE_NAME}")
     print(f"  Status:  systemctl status {_NAPCAT_SERVICE_NAME} {_GATEWAY_SERVICE_NAME}")
     print(f"  Logs:    journalctl -u {_NAPCAT_SERVICE_NAME} -f")
@@ -490,10 +489,10 @@ def napcat_status() -> None:
     installed = is_napcat_installed()
     running = napcat_running() if installed else False
 
-    print(f"\nNapCat status:")
+    print("\nNapCat status:")
     print(f"  installed: {'✓' if installed else '✗'}  ({qq_bin()})")
     if not installed:
-        print(f"  → Run: hermes-napcat napcat start   (will offer to install)")
+        print("  → Run: hermes-napcat napcat start   (will offer to install)")
     print(f"  running:   {'✓' if running else '✗'}")
     if running:
         print(f"  attach:    screen -r {_SCREEN_SESSION}")
@@ -700,13 +699,13 @@ def _print_instructions(
     step = 1
     if include_napcat_steps:
         print(f"{step}. 启动 NapCat（首次需扫码，之后自动登录）：")
-        print(f"     hermes-napcat napcat start")
-        print(f"     → 二维码直接显示在终端，扫码后自动完成登录\n")
+        print("     hermes-napcat napcat start")
+        print("     → 二维码直接显示在终端，扫码后自动完成登录\n")
         step += 1
     else:
         print(f"{step}. 确保 NapCat 已安装并运行：")
-        print(f"     hermes-napcat napcat start")
-        print(f"     （或先安装：hermes-napcat setup --with-napcat）\n")
+        print("     hermes-napcat napcat start")
+        print("     （或先安装：hermes-napcat setup --with-napcat）\n")
         step += 1
 
     # Try to auto-write Hermes config
@@ -714,9 +713,9 @@ def _print_instructions(
     if ok:
         print(f"{step}. Hermes config updated automatically → {msg}")
         if not qq:
-            print(f"\n   ⚠  self_id is still YOUR_QQ_NUMBER — the bot won't recognise")
-            print(f"      @mentions until you update it. Run:")
-            print(f"      hermes-napcat setup --qq YOUR_ACTUAL_QQ_NUMBER")
+            print("\n   ⚠  self_id is still YOUR_QQ_NUMBER — the bot won't recognise")
+            print("      @mentions until you update it. Run:")
+            print("      hermes-napcat setup --qq YOUR_ACTUAL_QQ_NUMBER")
         print()
     else:
         print(f"{step}. Add the following to ~/.hermes/config.yaml:\n")

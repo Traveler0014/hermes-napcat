@@ -30,11 +30,11 @@ import re
 import subprocess
 import tempfile
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 import aiohttp.web
-
+from gateway.config import Platform, PlatformConfig
 from gateway.platforms.base import (
     BasePlatformAdapter,
     MessageEvent,
@@ -42,7 +42,6 @@ from gateway.platforms.base import (
     SendResult,
     cache_image_from_bytes,
 )
-from gateway.config import Platform, PlatformConfig
 from gateway.session import SessionSource
 
 from .api import (
@@ -92,7 +91,6 @@ def _strip_markdown(text: str) -> str:
                 code_lines = []
             else:
                 in_code = False
-                block = "\n".join(code_lines)
                 label = f"[{code_lang}]" if code_lang else "[代码]"
                 out.append(f"┌─{label}─")
                 for cl in code_lines:
