@@ -180,6 +180,15 @@ def _inline(text: str) -> str:
     return text
 
 
+def _to_file_url(path: str) -> str:
+    """If *path* is a local filesystem path (no ``://``), prefix ``file://``.
+
+    NapCat's OneBot API accepts ``file://`` URLs for local files, so this
+    lets the adapter send local images/voice/video/documents transparently.
+    """
+    return path if "://" in path else f"file://{path}"
+
+
 def _file_ext(url: str) -> str:
     path = url.split("?")[0]
     dot = path.rfind(".")
@@ -598,7 +607,7 @@ class NapCatAdapter(BasePlatformAdapter):
     ) -> SendResult:
         try:
             is_group, num_id = self._parse_chat_id(chat_id)
-            segs: list[dict] = [image_segment(image_url)]
+            segs: list[dict] = [image_segment(_to_file_url(image_url))]
             if caption:
                 segs.append(text_segment(caption))
             if is_group:
@@ -609,6 +618,21 @@ class NapCatAdapter(BasePlatformAdapter):
         except Exception as exc:
             return SendResult(success=False, error=str(exc), retryable=True)
 
+    async def send_image_file(
+        self,
+        chat_id: str,
+        image_path: str,
+        caption: str | None = None,
+        reply_to: str | None = None,
+        metadata: dict | None = None,
+    ) -> SendResult:
+        """Send a local image file via NapCat (``file://`` URL).
+
+        Convenience wrapper over :meth:`send_image` — the path is
+        automatically prefixed with ``file://`` if it is not already a URL.
+        """
+        return await self.send_image(chat_id, _to_file_url(image_path), caption=caption, metadata=metadata)
+
     async def send_voice(
         self,
         chat_id: str,
@@ -617,7 +641,7 @@ class NapCatAdapter(BasePlatformAdapter):
     ) -> SendResult:
         try:
             is_group, num_id = self._parse_chat_id(chat_id)
-            segs = [record_segment(audio_path)]
+            segs = [record_segment(_to_file_url(audio_path))]
             if is_group:
                 r = await send_group_msg(self._http_api, num_id, segs, self._access_token or None)
             else:
@@ -634,7 +658,7 @@ class NapCatAdapter(BasePlatformAdapter):
     ) -> SendResult:
         try:
             is_group, num_id = self._parse_chat_id(chat_id)
-            segs = [video_segment(video_path)]
+            segs = [video_segment(_to_file_url(video_path))]
             if is_group:
                 r = await send_group_msg(self._http_api, num_id, segs, self._access_token or None)
             else:
@@ -653,10 +677,11 @@ class NapCatAdapter(BasePlatformAdapter):
         try:
             is_group, num_id = self._parse_chat_id(chat_id)
             name = filename or os.path.basename(file_path)
+            url = _to_file_url(file_path)
             if is_group:
-                await upload_group_file(self._http_api, num_id, file_path, name, self._access_token or None)
+                await upload_group_file(self._http_api, num_id, url, name, self._access_token or None)
             else:
-                await upload_private_file(self._http_api, num_id, file_path, name, self._access_token or None)
+                await upload_private_file(self._http_api, num_id, url, name, self._access_token or None)
             return SendResult(success=True)
         except Exception as exc:
             return SendResult(success=False, error=str(exc))
@@ -691,3 +716,66 @@ class NapCatAdapter(BasePlatformAdapter):
 
     async def stop_typing(self, chat_id: str) -> None:
         pass
+
+
+# ---------------------------------------------------------------------------
+# Hermes plugin-registration helpers
+# ---------------------------------------------------------------------------
+
+def check_requirements() -> bool:
+    """Hermes plugin entry: check whether NapCat is configured."""
+    return bool(os.getenv("NAPCAT_HTTP_API", "").strip())
+
+
+def validate_config(config: PlatformConfig) -> bool:
+    """Hermes plugin entry: validate platform config."""
+    extra = getattr(config, "extra", {}) or {}
+    http_api = os.getenv("NAPCAT_HTTP_API") or extra.get("http_api", "")
+    return bool(http_api)
+
+
+def is_connected(config: PlatformConfig) -> bool:
+    """Hermes plugin entry: check connectivity (same as validate for now)."""
+    return validate_config(config)
+
+
+def _env_enablement() -> dict | None:
+    """Seed PlatformConfig.extra from env vars during gateway config load."""
+    http_api = os.getenv("NAPCAT_HTTP_API", "").strip()
+    if not http_api:
+        return None
+    seed: dict[str, Any] = {"http_api": http_api}
+    ws_port = os.getenv("NAPCAT_WS_PORT", "").strip()
+    if ws_port:
+        try:
+            seed["ws_port"] = int(ws_port)
+        except ValueError:
+            pass
+    token = os.getenv("NAPCAT_ACCESS_TOKEN", "").strip()
+    if token:
+        seed["access_token"] = token
+    self_id = os.getenv("NAPCAT_SELF_ID", "").strip()
+    if self_id:
+        seed["self_id"] = self_id
+    dm_policy = os.getenv("NAPCAT_DM_POLICY", "").strip()
+    if dm_policy:
+        seed["dm_policy"] = dm_policy
+    allow_from = os.getenv("NAPCAT_ALLOW_FROM", "").strip()
+    if allow_from:
+        seed["allow_from"] = [x.strip() for x in allow_from.split(",") if x.strip()]
+    group_policy = os.getenv("NAPCAT_GROUP_POLICY", "").strip()
+    if group_policy:
+        seed["group_policy"] = group_policy
+    group_allow_from = os.getenv("NAPCAT_GROUP_ALLOW_FROM", "").strip()
+    if group_allow_from:
+        seed["group_allow_from"] = [x.strip() for x in group_allow_from.split(",") if x.strip()]
+    admins = os.getenv("NAPCAT_ADMINS", "").strip()
+    if admins:
+        seed["admins"] = [x.strip() for x in admins.split(",") if x.strip()]
+    media_max_mb = os.getenv("NAPCAT_MEDIA_MAX_MB", "").strip()
+    if media_max_mb:
+        try:
+            seed["media_max_mb"] = int(media_max_mb)
+        except ValueError:
+            pass
+    return seed
