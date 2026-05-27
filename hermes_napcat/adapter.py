@@ -13,6 +13,7 @@ Configuration in ~/.hermes/config.yaml:
           access_token: ""
           self_id: "123456789"
           ws_port: 18800
+          ws_host: "0.0.0.0"
           dm_policy: "allowlist"     # allowlist | open | disabled
           allow_from: []             # QQ numbers allowed for DMs
           group_policy: "open"       # open | allowlist | disabled
@@ -324,6 +325,7 @@ class NapCatAdapter(BasePlatformAdapter):
         # Treat placeholder values as empty so HTTP probe fills in real QQ
         self._self_id: str = "" if raw_self_id in ("YOUR_QQ_NUMBER", "YOURQQ_NUMBER") else raw_self_id
         self._ws_port: int = int(extra.get("ws_port", 18800))
+        self._ws_host: str = extra.get("ws_host", "0.0.0.0")
         self._dm_policy: str = extra.get("dm_policy", "allowlist")
         self._allow_from: list[str] = [str(x) for x in extra.get("allow_from", [])]
         self._group_policy: str = extra.get("group_policy", "open")
@@ -352,10 +354,10 @@ class NapCatAdapter(BasePlatformAdapter):
         app.router.add_get("/", self._ws_handler)
         self._runner = aiohttp.web.AppRunner(app)
         await self._runner.setup()
-        site = aiohttp.web.TCPSite(self._runner, "0.0.0.0", self._ws_port)
+        site = aiohttp.web.TCPSite(self._runner, self._ws_host, self._ws_port)
         await site.start()
         self._is_connected = True
-        logger.info("NapCat: reverse WS listening on ws://0.0.0.0:%d", self._ws_port)
+        logger.info("NapCat: reverse WS listening on ws://%s:%d", self._ws_host, self._ws_port)
 
         try:
             info = await get_login_info(self._http_api, self._access_token or None)
@@ -749,6 +751,9 @@ def _env_enablement() -> dict | None:
             seed["ws_port"] = int(ws_port)
         except ValueError:
             pass
+    ws_host = os.getenv("NAPCAT_WS_HOST", "").strip()
+    if ws_host:
+        seed["ws_host"] = ws_host
     token = os.getenv("NAPCAT_ACCESS_TOKEN", "").strip()
     if token:
         seed["access_token"] = token
