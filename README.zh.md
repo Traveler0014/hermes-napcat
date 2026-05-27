@@ -283,7 +283,21 @@ elif "your-provider.com" in normalized:
 | 头像 | 名字 | 角色 |
 |------|------|------|
 | [![shubyi](https://github.com/shubyi.png?size=60)](https://github.com/shubyi) | **[shubyi](https://github.com/shubyi)** | 创建者 & 维护者 |
+| [![Traveler0014](https://github.com/Traveler0014.png?size=60)](https://github.com/Traveler0014) | **[Traveler0014](https://github.com/Traveler0014)** | 贡献者 |
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+---
+
+## 致谢
+
+本项目 fork 自 [shubyi/hermes-napcat](https://github.com/shubyi/hermes-napcat)。感谢 **shubyi** 的原始实现，包括模块化架构、Markdown→QQ 纯文本转换、管理员权限系统和全面的 QQ 工具集。
+
+`file://` 本地文件发送能力移植自 [Aliang1337/hermes-napcat](https://github.com/Aliang1337/hermes-napcat)。
+
+本 fork 增强内容：
+- `file://` 本地文件发送（图片、语音、视频、文档）
+- 环境变量驱动的配置注入（`~/.hermes/.env`）
+- ruff lint + GitHub Actions CI/CD 自动构建发布
 
 ---
 
