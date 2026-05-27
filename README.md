@@ -292,6 +292,8 @@ Apply the same change at the second location (~line 1176) and in `agent/auxiliar
 
 This project is a fork of [shubyi/hermes-napcat](https://github.com/shubyi/hermes-napcat). Thanks to **shubyi** for the original implementation, including the modular architecture, Markdown→QQ conversion, admin permission system, and comprehensive QQ toolset.
 
+`file://` local file sending support was ported from [Aliang1337/hermes-napcat](https://github.com/Aliang1337/hermes-napcat).
+
 Additional enhancements:
 - `file://` local file sending support for images, voice, video, and documents
 - Hermes plugin installation via `hermes plugins install` (`plugin.yaml`)
