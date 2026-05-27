@@ -283,7 +283,19 @@ Apply the same change at the second location (~line 1176) and in `agent/auxiliar
 | Avatar | Name | Role |
 |--------|------|------|
 | [![shubyi](https://github.com/shubyi.png?size=60)](https://github.com/shubyi) | **[shubyi](https://github.com/shubyi)** | Creator & Maintainer |
+| [![Traveler0014](https://github.com/Traveler0014.png?size=60)](https://github.com/Traveler0014) | **[Traveler0014](https://github.com/Traveler0014)** | Contributor |
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+---
+
+## Acknowledgments
+
+This project is a fork of [shubyi/hermes-napcat](https://github.com/shubyi/hermes-napcat). Thanks to **shubyi** for the original implementation, including the modular architecture, Markdown→QQ conversion, admin permission system, and comprehensive QQ toolset.
+
+Additional enhancements:
+- `file://` local file sending support for images, voice, video, and documents
+- Hermes plugin installation via `hermes plugins install` (`plugin.yaml`)
+- Environment-driven configuration seeding from `~/.hermes/.env`
 
 ---
 
