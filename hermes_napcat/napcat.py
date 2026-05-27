@@ -15,18 +15,6 @@ _INSTALLER_URL = "https://nclatest.znin.net/NapNeko/NapCat-Installer/main/script
 _SCREEN_SESSION = "napcat"
 
 
-def _pip_install(package: str) -> None:
-    """Install a package via pip, auto-retrying with --break-system-packages on Debian."""
-    cmd = [sys.executable, "-m", "pip", "install", package, "-q"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode == 0:
-        return
-    if "externally-managed-environment" in result.stderr or "externally managed" in result.stderr:
-        subprocess.run(cmd + ["--break-system-packages"], check=True)
-    else:
-        raise RuntimeError(f"pip install {package} failed:\n{result.stderr}")
-
-
 # ── Paths ──────────────────────────────────────────────────────────────────────
 
 def napcat_home() -> Path:
@@ -611,11 +599,11 @@ def write_hermes_config(
     try:
         import yaml
     except ImportError:
-        try:
-            _pip_install("pyyaml")
-            import yaml
-        except Exception as e:
-            return False, f"pyyaml not installed and auto-install failed: {e}"
+        return False, (
+            "PyYAML is required but not installed. Please install it first:\n"
+            "  uv pip install pyyaml\n"
+            "  pip install pyyaml"
+        )
 
     cfg_path = _hermes_config_path()
 
@@ -657,11 +645,11 @@ def clean_hermes_config() -> tuple[bool, str]:
     try:
         import yaml
     except ImportError:
-        try:
-            _pip_install("pyyaml")
-            import yaml
-        except Exception as e:
-            return False, f"pyyaml not installed and auto-install failed: {e}"
+        return False, (
+            "PyYAML is required but not installed. Please install it first:\n"
+            "  uv pip install pyyaml\n"
+            "  pip install pyyaml"
+        )
 
     cfg_path = _hermes_config_path()
     if not cfg_path.exists():
